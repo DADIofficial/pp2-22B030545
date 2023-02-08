@@ -1,4 +1,3 @@
-NAME = "simple"
 def unique(nums):
     sorted(nums)
     new = nums[0]
