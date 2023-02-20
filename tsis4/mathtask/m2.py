@@ -1,0 +1,1 @@
+print(int(input("Height: ")) * 0.5 * (int(input("Base, first value: ")) +int(input("Base, second value: "))))
