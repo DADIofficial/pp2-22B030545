@@ -1,0 +1,1 @@
+print(all(tuple(map(int, input().split()))))
