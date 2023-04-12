@@ -18,21 +18,26 @@ font = pygame.font.SysFont("Verdana", 15)
 
 
 def submaterials():
-    pygame.draw.rect(buttons_bar, BLACK, (2, 2, 96, 206), 1)  # rect for bar
+    pygame.draw.rect(buttons_bar, BLACK, (2, 2, 96, 298), 1)  # rect for bar
     pygame.draw.aaline(buttons_bar, BLACK, (8, 8), (40, 40), 1)  # line for line
     pygame.draw.rect(buttons_bar, BLACK, (58, 15, 32, 20), 1)  # rect for rect
     pygame.draw.circle(buttons_bar, BLACK, (27, 70), 15, 1)  # circ for circ
     pygame.draw.rect(buttons_bar, BLACK, (56, 58, 36, 28))  # rect for eraser
+    pygame.draw.rect(buttons_bar, BLACK, (10, 103, 32, 32), 1)  # rect for square
+    pygame.draw.polygon(buttons_bar, BLACK, [[56, 117], [74, 100], [92, 117], [74, 134]], 1) # polygon for rhombus
+    pygame.draw.polygon(buttons_bar, BLACK, [[10, 145], [10, 180], [40, 180]], 1) # polygon for right
+    pygame.draw.polygon(buttons_bar, BLACK, [[74, 145], [56, 180], [92, 180]], 1)
+
     c = font.render('Press:', True, BLACK)
-    buttons_bar.blit(c, (5, 100))
+    buttons_bar.blit(c, (5, 192))
     r = font.render('1 - Red', True, RED)
-    buttons_bar.blit(r, (5, 120))
+    buttons_bar.blit(r, (5, 212))
     g = font.render('2 - Green', True, GREEN)
-    buttons_bar.blit(g, (5, 140))
+    buttons_bar.blit(g, (5, 232))
     b = font.render('3 - Blue', True, BLUE)
-    buttons_bar.blit(b, (5, 160))
+    buttons_bar.blit(b, (5, 252))
     y = font.render('4 - White', True, BLACK)
-    buttons_bar.blit(y, (5, 180))
+    buttons_bar.blit(y, (5, 272))
     SCREEN.blit(buttons_bar, (700, 0))
 
 
@@ -150,6 +155,129 @@ class Rectangle(GameObject):
         self.end_pos.x, self.end_pos.y = current_pos
 
 
+class Square(GameObject):
+    def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        self.start_pos = Point(*start_pos)
+        self.end_pos = Point(*start_pos)
+        self.color = WHITE
+
+    def draw(self):
+        start_pos_x = min(self.start_pos.x, self.end_pos.x)  # min(self.start_pos[0], self.end_pos[0])
+        start_pos_y = min(self.start_pos.y, self.end_pos.y)
+
+        end_pos_x = max(self.start_pos.x, self.end_pos.x)
+        end_pos_y = max(self.start_pos.y, self.end_pos.y)
+
+        size = (min(end_pos_x - start_pos_x, end_pos_y - start_pos_y))
+        if self.start_pos.x > self.end_pos.x:
+            start_pos_x = end_pos_x - size
+        if self.start_pos.y > self.end_pos.y:
+            start_pos_y = end_pos_y - size
+
+        pygame.draw.rect(
+            SCREEN,
+            self.color,
+            (
+                start_pos_x,
+                start_pos_y,
+                size,
+                size,
+            ),
+            width=5,
+        )
+
+    def update(self, current_pos):
+        self.end_pos.x, self.end_pos.y = current_pos
+
+class Rhombus(GameObject):
+    def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        self.start_pos = Point(*start_pos)
+        self.end_pos = Point(*start_pos)
+        self.color = WHITE
+
+    def draw(self):
+        start_pos_x = min(self.start_pos.x, self.end_pos.x)  # min(self.start_pos[0], self.end_pos[0])
+        start_pos_y = min(self.start_pos.y, self.end_pos.y)
+
+        end_pos_x = max(self.start_pos.x, self.end_pos.x)
+        end_pos_y = max(self.start_pos.y, self.end_pos.y)
+
+
+        pygame.draw.polygon(
+            SCREEN,
+            self.color,
+            [
+                [start_pos_x, (start_pos_y + end_pos_y)/2],
+                [(start_pos_x + end_pos_x)/2, start_pos_y],
+                [end_pos_x, (start_pos_y + end_pos_y)/2],
+                [(start_pos_x + end_pos_x)/2, end_pos_y]
+            ],
+            width=5,
+        )
+
+    def update(self, current_pos):
+        self.end_pos.x, self.end_pos.y = current_pos
+
+class Right_trian(GameObject):
+    def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        self.start_pos = Point(*start_pos)
+        self.end_pos = Point(*start_pos)
+        self.color = WHITE
+
+    def draw(self):
+        start_pos_x = min(self.start_pos.x, self.end_pos.x)  # min(self.start_pos[0], self.end_pos[0])
+        start_pos_y = min(self.start_pos.y, self.end_pos.y)
+
+        end_pos_x = max(self.start_pos.x, self.end_pos.x)
+        end_pos_y = max(self.start_pos.y, self.end_pos.y)
+
+
+
+        pygame.draw.polygon(
+            SCREEN,
+            self.color,
+            [
+                [end_pos_x if (self.start_pos.x > self.end_pos.x and self.start_pos.y < self.end_pos.y) else start_pos_x, start_pos_y],
+                [end_pos_x, start_pos_y] if (self.start_pos.x > self.end_pos.x and self.start_pos.y > self.end_pos.y) else [start_pos_x, end_pos_y],
+                [end_pos_x, start_pos_y if (self.start_pos.x < self.end_pos.x and self.start_pos.y > self.end_pos.y) else end_pos_y]
+                #3 conditon where point change
+            ],
+            width=5,
+        )
+
+    def update(self, current_pos):
+        self.end_pos.x, self.end_pos.y = current_pos
+
+class Equ_trian(GameObject):
+    def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        self.start_pos = Point(*start_pos)
+        self.end_pos = Point(*start_pos)
+        self.color = WHITE
+
+    def draw(self):
+        start_pos_x = min(self.start_pos.x, self.end_pos.x)  # min(self.start_pos[0], self.end_pos[0])
+        start_pos_y = min(self.start_pos.y, self.end_pos.y)
+
+        end_pos_x = max(self.start_pos.x, self.end_pos.x)
+        end_pos_y = max(self.start_pos.y, self.end_pos.y)
+
+
+
+        pygame.draw.polygon(
+            SCREEN,
+            self.color,
+            [
+                [start_pos_x, start_pos_y] if (self.start_pos.y < self.end_pos.y) else [start_pos_x, end_pos_y],
+                [end_pos_x, start_pos_y] if (self.start_pos.y < self.end_pos.y) else [end_pos_x, end_pos_y],
+                [(start_pos_x + end_pos_x)/2, (start_pos_y + ((3**0.5)*(end_pos_x - start_pos_x))//2) if self.start_pos.y < self.end_pos.y else (end_pos_y - ((3**0.5)*(end_pos_x - start_pos_x))//2)]
+                #3 conditon where point change
+            ],
+            width=5,
+        )
+
+    def update(self, current_pos):
+        self.end_pos.x, self.end_pos.y = current_pos
+
 class Ellipse(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
         self.start_pos = Point(*start_pos)
@@ -189,8 +317,12 @@ def main():
     rec_button = Button(52, 4, 44, 44, False)
     cir_button = Button(4, 50, 44, 44, False)
     eraser_button = Button(52, 50, 44, 44, False)
+    square_button = Button(4, 96, 44, 44, False)
+    rhombus_button = Button(52, 96, 44, 44, False)
+    right_tri_button = Button(4, 142, 44, 44, False)
+    equ_tri_button = Button(52, 142, 44, 44, False)
     buttons = [
-        line_button, rec_button, cir_button, eraser_button
+        line_button, rec_button, cir_button, eraser_button, square_button, rhombus_button, right_tri_button, equ_tri_button
     ]
 
     objects = []
@@ -234,16 +366,43 @@ def main():
                         obj.button_pressed = False
                     line_button.button_pressed = True
                     current_shape = Pen
+
                 elif eraser_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
                     for obj in buttons:
                         obj.button_pressed = False
                     eraser_button.button_pressed = True
                     current_shape = Eraser
+
                 elif cir_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
                     for obj in buttons:
                         obj.button_pressed = False
                     cir_button.button_pressed = True
                     current_shape = Ellipse
+
+                elif square_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
+                    for obj in buttons:
+                        obj.button_pressed = False
+                    square_button.button_pressed = True
+                    current_shape = Square
+
+                elif rhombus_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
+                    for obj in buttons:
+                        obj.button_pressed = False
+                    rhombus_button.button_pressed = True
+                    current_shape = Rhombus
+
+                elif right_tri_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
+                    for obj in buttons:
+                        obj.button_pressed = False
+                    right_tri_button.button_pressed = True
+                    current_shape = Right_trian
+
+                elif equ_tri_button.rect.collidepoint((event.pos[0] - 700, event.pos[1])):
+                    for obj in buttons:
+                        obj.button_pressed = False
+                    equ_tri_button.button_pressed = True
+                    current_shape = Equ_trian
+
                 else:
                     active_obj = current_shape(start_pos=event.pos)
                     objects.append(active_obj)
