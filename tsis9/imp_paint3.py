@@ -1,5 +1,8 @@
 import pygame
 
+from pygame.locals import *
+
+
 pygame.init()
 clock = pygame.time.Clock()
 WIDTH, HEIGHT = 800, 700
@@ -9,16 +12,18 @@ buttons_bar = pygame.Surface((200, 700))
 # color
 BLACK = pygame.Color(0, 0, 0)
 WHITE = pygame.Color(255, 255, 255)
+GREY = pygame.Color(150, 150, 150)
 GREEN = pygame.Color(0, 255, 0)
 RED = pygame.Color(255, 0, 0)
 BLUE = pygame.Color(0, 0, 255)
 
 # font
-font = pygame.font.SysFont("Verdana", 15)
+font = pygame.font.SysFont("Papyrus", 15)
+font_size = pygame.font.SysFont("Papyrus", 25)
 
-
-def submaterials():
-    pygame.draw.rect(buttons_bar, BLACK, (2, 2, 96, 298), 1)  # rect for bar
+def submaterials(size):
+    buttons_bar.fill((GREY))
+    pygame.draw.rect(buttons_bar, BLACK, (2, 2, 96, 335), 1)  # rect for bar
     pygame.draw.aaline(buttons_bar, BLACK, (8, 8), (40, 40), 1)  # line for line
     pygame.draw.rect(buttons_bar, BLACK, (58, 15, 32, 20), 1)  # rect for rect
     pygame.draw.circle(buttons_bar, BLACK, (27, 70), 15, 1)  # circ for circ
@@ -29,16 +34,19 @@ def submaterials():
     pygame.draw.polygon(buttons_bar, BLACK, [[74, 145], [56, 180], [92, 180]], 1)
 
     c = font.render('Press:', True, BLACK)
-    buttons_bar.blit(c, (5, 192))
+    buttons_bar.blit(c, (30, 192))
     r = font.render('1 - Red', True, RED)
-    buttons_bar.blit(r, (5, 212))
+    buttons_bar.blit(r, (25, 212))
     g = font.render('2 - Green', True, GREEN)
-    buttons_bar.blit(g, (5, 232))
+    buttons_bar.blit(g, (20, 232))
     b = font.render('3 - Blue', True, BLUE)
-    buttons_bar.blit(b, (5, 252))
-    y = font.render('4 - White', True, BLACK)
-    buttons_bar.blit(y, (5, 272))
-    SCREEN.blit(buttons_bar, (700, 0))
+    buttons_bar.blit(b, (23, 252))
+    y = font.render('4 - White', True, WHITE)
+    buttons_bar.blit(y, (20, 272))
+    size_in_font = font.render('SIZE:', True, BLACK)
+    buttons_bar.blit(size_in_font, (5, 302))
+    size_in_font = font_size.render(str(size), True, BLACK)
+    buttons_bar.blit(size_in_font, (55, 294))
 
 
 # Point = collections.namedtuple('Point', ['x', 'y'])
@@ -50,6 +58,9 @@ class Point:
 
 
 class GameObject:
+    def __init__(self):
+        self.size = 15
+        return
     def draw(self):
         return
 
@@ -59,6 +70,7 @@ class GameObject:
 
 class Button(GameObject):
     def __init__(self, x1, y1, x2, y2, button_pressed):
+        super().__init__()
         self.x1, self.x2, self.y1, self.y2, self.button_pressed = x1, x2, y1, y2, button_pressed
         self.rect = pygame.draw.rect(
             buttons_bar,
@@ -90,10 +102,12 @@ class Button(GameObject):
 
 class Pen(GameObject):
     def __init__(self, *args, **kwargs):  # Pen(1, 2, 3, a=4) =>
+        super().__init__()
         self.points: list[Point, ...] = []  # [(x1, y1), (x2, y2)]
         self.color = WHITE
 
     def draw(self):
+
         for idx, point in enumerate(self.points[:-1]):  # range(len(self.points))
             next_point = self.points[idx + 1]
             pygame.draw.line(
@@ -101,8 +115,15 @@ class Pen(GameObject):
                 self.color,
                 start_pos=(point.x, point.y),  # self.points[idx]
                 end_pos=(next_point.x, next_point.y),
-                width=5
+                width = max(1, self.size)
             )
+            if point.x > 0 and point.y > 0:
+                pygame.draw.circle(
+                    SCREEN,
+                    self.color,
+                    (point.x, point.y),  # self.points[idx]
+                    self.size // 2
+                )
 
     def update(self, current_pos):
         self.points.append(Point(*current_pos))  # (x, y) Point((x, y)) => Point(x, y)
@@ -110,9 +131,11 @@ class Pen(GameObject):
 
 class Eraser(GameObject):
     def __init__(self, *args, **kwargs):  # Pen(1, 2, 3, a=4) =>
+        super().__init__()
         self.points: list[Point, ...] = []  # [(x1, y1), (x2, y2)]
 
     def draw(self):
+
         for idx, point in enumerate(self.points[:-1]):  # range(len(self.points))
             next_point = self.points[idx + 1]
             pygame.draw.line(
@@ -120,8 +143,15 @@ class Eraser(GameObject):
                 BLACK,
                 start_pos=(point.x, point.y),  # self.points[idx]
                 end_pos=(next_point.x, next_point.y),
-                width=20
+                width = max(1, self.size)
             )
+            if point.x > 0 and point.y > 0:
+                pygame.draw.circle(
+                    SCREEN,
+                    BLACK,
+                    (point.x, point.y),  # self.points[idx]
+                    self.size // 2
+                )
 
     def update(self, current_pos):
         self.points.append(Point(*current_pos))  # (x, y) Point((x, y)) => Point(x, y)
@@ -129,6 +159,7 @@ class Eraser(GameObject):
 
 class Rectangle(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -148,7 +179,7 @@ class Rectangle(GameObject):
                 end_pos_x - start_pos_x,
                 end_pos_y - start_pos_y,
             ),
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -157,6 +188,7 @@ class Rectangle(GameObject):
 
 class Square(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -183,7 +215,7 @@ class Square(GameObject):
                 size,
                 size,
             ),
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -191,6 +223,7 @@ class Square(GameObject):
 
 class Rhombus(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -212,7 +245,7 @@ class Rhombus(GameObject):
                 [end_pos_x, (start_pos_y + end_pos_y)/2],
                 [(start_pos_x + end_pos_x)/2, end_pos_y]
             ],
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -220,6 +253,7 @@ class Rhombus(GameObject):
 
 class Right_trian(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -242,7 +276,7 @@ class Right_trian(GameObject):
                 [end_pos_x, start_pos_y if (self.start_pos.x < self.end_pos.x and self.start_pos.y > self.end_pos.y) else end_pos_y]
                 #3 conditon where point change
             ],
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -250,6 +284,7 @@ class Right_trian(GameObject):
 
 class Equ_trian(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -272,7 +307,7 @@ class Equ_trian(GameObject):
                 [(start_pos_x + end_pos_x)/2, (start_pos_y + ((3**0.5)*(end_pos_x - start_pos_x))//2) if self.start_pos.y < self.end_pos.y else (end_pos_y - ((3**0.5)*(end_pos_x - start_pos_x))//2)]
                 #3 conditon where point change
             ],
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -280,6 +315,7 @@ class Equ_trian(GameObject):
 
 class Ellipse(GameObject):
     def __init__(self, start_pos):  # Rectangle(start_pos=1); Pen(start_pos=1)
+        super().__init__()
         self.start_pos = Point(*start_pos)
         self.end_pos = Point(*start_pos)
         self.color = WHITE
@@ -299,7 +335,7 @@ class Ellipse(GameObject):
                 end_pos_x - start_pos_x,
                 end_pos_y - start_pos_y,
             ),
-            width=5,
+            width=self.size,
         )
 
     def update(self, current_pos):
@@ -312,6 +348,7 @@ def main():
     active_obj = game_object
     current_shape = Pen  # current_shape()
     current_color = WHITE
+    current_size = 15
 
     line_button = Button(4, 4, 44, 44, True)
     rec_button = Button(52, 4, 44, 44, False)
@@ -330,12 +367,18 @@ def main():
     while running:
         SCREEN.fill(BLACK)
         buttons_bar.fill('white')
-        for obj in buttons:
-            obj.draw()
+        submaterials(current_size)
         for obj in objects:
             obj.draw()
-        submaterials()
+        for obj in buttons:
+            obj.draw()
+        SCREEN.blit(buttons_bar, (700, 0))
 
+        pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[K_UP]:
+            current_size += 1
+        elif pressed_keys[K_DOWN]:
+            current_size = max(0, current_size - 1)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -407,6 +450,7 @@ def main():
                     active_obj = current_shape(start_pos=event.pos)
                     objects.append(active_obj)
                     active_obj.color = current_color
+                    active_obj.size = current_size
 
             if event.type == pygame.MOUSEMOTION:
                 active_obj.update(current_pos=event.pos)
