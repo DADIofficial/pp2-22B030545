@@ -73,30 +73,33 @@ class Snake:
         head = self.body[0]
         otherhead = self.body[1]
         k = True
-        for idx in range(len(self.body) - 1, 0, -1):
-            #Head turns red on impact
-            if self.body[idx - 1].x == self.body[0].x + dx and self.body[idx - 1].y == self.body[0].y + dy and (dx != 0 or dy != 0):
+        if dx != 0 or dy != 0:
+            for idx in range(len(self.body) - 1, 0, -1):
+                # Head turns red on impact
+                if self.body[idx - 1].x == self.body[0].x + dx and self.body[idx - 1].y == self.body[0].y + dy and (
+                        dx != 0 or dy != 0):
+                    k = False
+                    pygame.draw.rect(
+                        SCREEN,
+                        RED,
+                        pygame.Rect(
+                            head.x * BLOCK_SIZE,
+                            head.y * BLOCK_SIZE,
+                            BLOCK_SIZE,
+                            BLOCK_SIZE,
+                        ))
+                self.body[idx].x = self.body[idx - 1].x
+                self.body[idx].y = self.body[idx - 1].y
+            # [Point(0, 1), Point(2, 5), Point(5, 9)]
+            # [Point(0, 0), Point(0, 1), Point(2, 5)]
+            self.body[0].x += dx
+            self.body[0].y += dy
+
+            if self.body[0].x > WIDTH // BLOCK_SIZE - 1 or self.body[0].x < 0 or self.body[0].y < 0 or self.body[
+                0].y > HEIGHT // BLOCK_SIZE - 1:
                 k = False
-                pygame.draw.rect(
-                    SCREEN,
-                    RED,
-                    pygame.Rect(
-                        head.x * BLOCK_SIZE,
-                        head.y * BLOCK_SIZE,
-                        BLOCK_SIZE,
-                        BLOCK_SIZE,
-                    ))
-            self.body[idx].x = self.body[idx - 1].x
-            self.body[idx].y = self.body[idx - 1].y
-        # [Point(0, 1), Point(2, 5), Point(5, 9)]
-        # [Point(0, 0), Point(0, 1), Point(2, 5)]
-        self.body[0].x += dx
-        self.body[0].y += dy
 
-        if self.body[0].x > WIDTH // BLOCK_SIZE - 1 or self.body[0].x < 0 or self.body[0].y < 0 or self.body[0].y > HEIGHT // BLOCK_SIZE - 1:
-            k = False
-
-        return(k)
+            return (k)
 
     def check_collision(self, food):
         if food.location.x != self.body[0].x:
@@ -155,7 +158,7 @@ def main():
         print("Running the last save")
         with open(name + '.json', 'r') as f:
             data = f.read()
-            save_snake =  json.loads(data)
+            save_snake = json.loads(data)
             if save_snake[0] == True:
                 snake.body = [Point(d['x'], d['y']) for d in save_snake[1]]
                 num_level = save_snake[2] // 8 + 1
@@ -243,11 +246,10 @@ def main():
                 time.sleep(2)
                 running = False
                 level_complited = False
+
                 current.execute("SELECT score FROM user_snake WHERE user_name=%s", (name,))
                 if current.fetchone()[0] < num_food:
                     current.execute("UPDATE user_snake SET score=%s WHERE user_name=%s", (num_food, name))
-
-
 
                 save_result = [False, [p.__json__() for p in snake.body], 0]
                 with open(name + '.json', 'w') as f:
