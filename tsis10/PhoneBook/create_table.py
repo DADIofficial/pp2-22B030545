@@ -9,7 +9,6 @@ sql="""
     CREATE TABLE PhoneBook(
         person_name VARCHAR,
         phone_number VARCHAR,
-        city VARCHAR
     );
 """
 

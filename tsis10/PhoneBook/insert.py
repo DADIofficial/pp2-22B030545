@@ -5,14 +5,13 @@ db = psycopg2.connect(**params)
 current = db.cursor()
 
 sql = """
-    INSERT INTO PhoneBook VALUES (%s, %s, %s) returning *;
+    INSERT INTO PhoneBook VALUES (%s, %s) returning *;
 """
 
 name = input("Enter the name:")
 phone_number = input("Enter the phone_number:")
-city = input("Enter the city:")
 
-current.execute(sql, (name, phone_number, city))
+current.execute(sql, (name, phone_number))
 result = current.fetchone()
 
 print("User added:")
