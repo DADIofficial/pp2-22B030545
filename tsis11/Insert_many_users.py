@@ -17,12 +17,13 @@ for i in range(0, k):
 
 cur = conn.cursor()
 result = [['Text']]
-# указываем выходной параметр incor_number
+
 cur.execute("CALL add_many_users(%s, %s, %s, %s)", (add_names, add_surnames, add_numbers, result))
 res = cur.fetchone()[0]
 
 conn.commit()
-print(res)
+if res != []:
+    print("Incorrect data: ", res)
 
 cur.close()
 conn.close()
