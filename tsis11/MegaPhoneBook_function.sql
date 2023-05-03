@@ -10,18 +10,18 @@ $$;
 
 DROP FUNCTION add_many_users;
 CREATE OR REPLACE FUNCTION add_many_users(add_names text[], add_surnames text[], add_numbers text[])
-RETURNS text[]
+RETURNS text[][]
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    incor_number text[];
+    incor_number text[][];
     i integer;
 BEGIN
     FOR i IN 1..array_length(add_names, 1) LOOP
         IF ((SUBSTRING(add_numbers[i], 1, 1) = '8' AND LENGTH(add_numbers[i]) = 11) OR (SUBSTRING(add_numbers[i], 1, 2) = '+7' AND LENGTH(add_numbers[i]) = 12)) AND SUBSTRING(add_numbers[i], 2) ~ '^[0-9]+$' THEN
              INSERT INTO MegaPhoneBook VALUES (add_names[i], add_surnames[i], add_numbers[i]);
         ELSE
-             incor_number = array_append(incor_number, add_numbers[i]);
+             incor_number := incor_number || ARRAY[ARRAY[add_names[i], add_surnames[i], add_numbers[i]]];
         END IF;
     END LOOP;
 	return(incor_number);

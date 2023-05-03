@@ -22,7 +22,7 @@ cur.execute("SELECT add_many_users(%s, %s, %s)", (add_names, add_surnames, add_n
 conn.commit()
 result = cur.fetchone()[0]
 if result != None:
-    print("Incorrect phone numbers: ", result)
+    print("Incorrect data: ", result)
 
 cur.close()
 conn.close()
