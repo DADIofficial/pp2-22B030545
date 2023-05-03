@@ -8,15 +8,22 @@ END;
 $$;
 
 
-DROP FUNCTION add_many_users;
-CREATE OR REPLACE FUNCTION add_many_users(add_names text[], add_surnames text[], add_numbers text[])
-RETURNS text[][]
+
+
+DROP PROCEDURE add_many_users;
+CREATE OR REPLACE PROCEDURE add_many_users(
+    IN add_names text[], 
+    IN add_surnames text[], 
+    IN add_numbers text[], 
+    OUT incor_number text[][]
+)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    incor_number text[][];
     i integer;
 BEGIN
+    incor_number := ARRAY[ARRAY[]]::text[][];
+
     FOR i IN 1..array_length(add_names, 1) LOOP
         IF ((SUBSTRING(add_numbers[i], 1, 1) = '8' AND LENGTH(add_numbers[i]) = 11) OR (SUBSTRING(add_numbers[i], 1, 2) = '+7' AND LENGTH(add_numbers[i]) = 12)) AND SUBSTRING(add_numbers[i], 2) ~ '^[0-9]+$' THEN
              INSERT INTO MegaPhoneBook VALUES (add_names[i], add_surnames[i], add_numbers[i]);
@@ -24,10 +31,11 @@ BEGIN
              incor_number := incor_number || ARRAY[ARRAY[add_names[i], add_surnames[i], add_numbers[i]]];
         END IF;
     END LOOP;
-	return(incor_number);
-
 END;
 $$;
+
+
+
 
 CREATE OR REPLACE FUNCTION return_all_same_user(same_res text)
 RETURNS TABLE(name_user character varying, surname_user character varying, phone_user character varying) AS $$
@@ -40,6 +48,10 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
 
 CREATE OR REPLACE PROCEDURE add_or_update_user(new_user text, new_surname text, new_number text)
 LANGUAGE plpgsql
@@ -54,6 +66,10 @@ BEGIN
 END;
 $$;
 
+
+
+
+
 CREATE OR REPLACE FUNCTION get_users_between_rows(start_row integer, number_row integer)
 RETURNS TABLE(user_names character varying, user_surnames character varying, phone_numbers character varying) AS $$
 BEGIN
@@ -66,4 +82,3 @@ END;
 $$ LANGUAGE plpgsql;
 
 SELECT * FROM MegaPhoneBook;
-

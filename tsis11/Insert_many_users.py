@@ -1,5 +1,5 @@
-from config import params
 import psycopg2
+from config import params
 
 conn = psycopg2.connect(**params)
 
@@ -16,13 +16,13 @@ for i in range(0, k):
     add_numbers.append(l[2])
 
 cur = conn.cursor()
+result = [['Text']]
+# указываем выходной параметр incor_number
+cur.execute("CALL add_many_users(%s, %s, %s, %s)", (add_names, add_surnames, add_numbers, result))
+res = cur.fetchone()[0]
 
-
-cur.execute("SELECT add_many_users(%s, %s, %s)", (add_names, add_surnames, add_numbers))
 conn.commit()
-result = cur.fetchone()[0]
-if result != None:
-    print("Incorrect data: ", result)
+print(res)
 
 cur.close()
 conn.close()
